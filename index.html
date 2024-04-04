@@ -216,7 +216,7 @@
     function connect(){
         if(localStorage.getItem("authKey") !== null){{
             console.log("Trying to connect");
-            return new WebSocket("ws://memory-phd.gl.at.ply.gg:19314");
+            return new WebSocket("ws://way-inner.gl.at.ply.gg:19321");
         }}
         else{
             console.log("Not authorised enter authkey");
@@ -381,7 +381,7 @@
             websocket.send(formatMessage("playerInformation"));
     }
     function checkServer(){
-        ws = new WebSocket("ws://memory-phd.gl.at.ply.gg:19314");
+        ws = new WebSocket("ws://way-inner.gl.at.ply.gg:19321");
         ws.onopen = (event) => {
             console.log("Server online");
             window.location.reload();
