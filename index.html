@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Main</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="other.css">
+</head>
+<body>
+<div class="popup" id="popupAuth">
+    <div class="col-sm-4 grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <center>
+                    <h2 class="text-danger">Enter Authorisation Code:</h2>
+                    <input type="password" class="form-control mb-2 mr-sm-2" id="authKey">
+                    <button class="btn btn-dark btn-primary mb-2" id="authKeyBtn" onclick="setAuthKey(document.getElementById('authKey').value);">Enter</button>
+                </center>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="popup" id="popup2">
+    <div class="col-sm-4 grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <center>
+                    <h2 class="text-danger">Error</h2>
+                    <h3 class="mb-0">Not connected to server trying to reconnect</h3>
+                    <img class="img-xl" src="connecting.gif" alt="Loading icon">
+                </center>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-scroller">
+    <nav class="sidebar sidebar-offcanvas" id="sidebar">
+        <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
+            <img src="ritba.png" alt="RITBA">
+        </div>
+        <ul class="nav" id="serverList">
+            <li class="nav-item menu-items">
+                <btn class="btn nav-link" onclick="console.log('No server')">
+              <span class="menu-icon">
+                  <img class="img-xs rounded-circle " src="disconnect.png" alt="">
+              </span>
+                    <span class="menu-title">No servers given</span>
+                </btn>
+            </li>
+        </ul>
+    </nav>
+<div class="container-fluid page-body-wrapper">
+    <nav class="navbar p-0 fixed-top d-flex flex-row">
+        <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch" id="accounts">
+            <div class="navbar-profile form-inline" onclick="console.log('No account')" style="cursor: pointer;">
+                <img class="img-xs rounded-circle" src="profile.png" alt="">
+                <p class="mb-0 d-none d-sm-block navbar-profile-name">No account found</p>
+                <i class="mdi mdi-menu-down d-none d-sm-block"></i>
+            </div>
+        </div>
+    </nav>
+<div class="main-panel">
+<div class="content-wrapper">
+<div class="row">
+    <div class="col-lg-6 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Player Control</h4>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr class="table-info">
+                            <th class="text-success">Control</th>
+                            <th class="text-success">Value</th>
+                            <th class="text-success">Choice</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Position</td>
+                            <td id="position">Unknown</td>
+                            <td><form class="form-inline">
+                                <input type="text" size="3" class="form-control mb-2 mr-sm-2" id="x" placeholder="X">
+                                <input type="text" size="3" class="form-control mb-2 mr-sm-2" id="y" placeholder="Y">
+                                <input type="text" size="3" class="form-control mb-2 mr-sm-2" id="z" placeholder="Z">
+                                <button onclick="sendMessage(formatMessage('teleport', {x:document.getElementById('x').value,y:document.getElementById('y').value,z:document.getElementById('z').value}));" class="btn btn-dark btn-primary mb-2" type="button">Teleport</button>
+                            </form></td>
+                        </tr>
+                        <tr>
+                            <td>Portal</td>
+                            <td id="currentPortal">No current portal</td>
+                            <td><form class="form-inline">
+                                <input type="text" size="15" class="form-control mb-2 mr-sm-2" id="portalServer" placeholder="play.ritba.live">
+                                <input type="text" size="3" class="form-control mb-2 mr-sm-2" id="portalPort" placeholder="36018">
+                                <button onclick="sendMessage(formatMessage('portal', {server:document.getElementById('portalServer').value,port:document.getElementById('portalPort').value}));" class="btn btn-dark btn-primary mb-2" type="button">Create</button>
+                            </form></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Player Information</h4>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr class="table-info">
+                            <th class="text-success">Name</th>
+                            <th class="text-success">Value</th>
+                        </tr>
+                        </thead>
+                        <tbody id="playerInformation">
+                        <tr>
+                            <td>Not received info</td>
+                            <td>Connect to a game first</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 grid-margin stretch-card" style="width: 1000px; height: 1000px; overflow: auto;" id="chatRoot">
+        <div class="card">
+            <div class="card-body" id="chat">
+                <h4 class="card-title">Chat</h4>
+                <div class="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
+                    <div class="text-md-center text-xl-left">
+                        <h6 class="mb-1">No Chat</h6>
+                        <p class="text-muted mb-0">Player</p>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Message" aria-describedby="basic-addon2" id="sendChat">
+                <div class="input-group-append">
+                    <button onclick="sendMessage(formatMessage('sendChat', document.getElementById('sendChat').value))" class="btn btn-dark btn-rounded btn-fw" type="button">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="col-lg-6 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Game Information</h4>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr class="table-info">
+                        <th class="text-success">Setting</th>
+                        <th class="text-success">Value</th>
+                    </tr>
+                    </thead>
+                    <tbody id="start_game">
+                    <tr>
+                        <td>Not received info</td>
+                        <td>Connect to a game first</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+<script>
+    class Client{
+        constructor(client) {
+            this.connected = false;
+            this.connecting = false;
+            this.connectedServer = undefined;
+            this.connectingServer = undefined;
+            this.interval = undefined;
+            this.chat = [];
+            this.start_game = undefined;
+            this.playerInformation = undefined;
+            this.servers = [];
+            this.currentAccount = undefined;
+            this.accounts = undefined;
+            this.currentServer = undefined;
+            this.connectedServersID = "none";
+            this.chatID = "none";
+            this.playerInformationID = "none"
+            this.start_gameID = "none";
+            this.connectingServersID = "none";
+            this.connectingServers = [];
+        }
+        static connect(connected){
+            this.connected = connected;
+        }
+    }
+    $ = function(id) {
+        return document.getElementById(id);
+    }
+
+    var show = function(id) {
+        $(id).style.display ='block';
+        console.log("Showing: %s", id);
+    }
+    var hide = function(id) {
+        $(id).style.display ='none';
+    }
+    function setAuthKey(authKey){
+        localStorage.setItem("authKey", authKey);
+        window.location.reload();
+    }
+    function connect(){
+        if(localStorage.getItem("authKey") !== null){{
+            console.log("Trying to connect");
+            return new WebSocket("ws://memory-phd.gl.at.ply.gg:19314");
+        }}
+        else{
+            console.log("Not authorised enter authkey");
+            show("popupAuth");
+        }
+    }
+    var websocket = connect();
+    var websocketConnected = false;
+    websocket.onopen = (event) => {
+        console.log("Connected")
+        websocketConnected = true;
+        websocket.send(formatMessage("ping"));
+        websocket.send(formatMessage("getChat"));
+        websocket.send(formatMessage("start_game"));
+        websocket.send(formatMessage("playerInformation"));
+        websocket.send(formatMessage("servers"));
+        // websocket.send(formatMessage("connectingServer"));
+        websocket.send(formatMessage("accounts"));
+        Client.interval = setInterval(pingConnection, 1000);
+    };
+    websocket.onclose = (event) =>{
+        websocketConnected = false;
+        console.log("Disconnected");
+        clearInterval(Client.interval);
+        setTimeout(checkServer, 1000);
+        show("popup2");
+        // document.getElementById("popupAuth").style.display ='block';
+    };
+    websocket.onmessage = (event) => {
+        console.log(event.data);
+        switch(event.data){
+            case "Not authorised":
+                // websocket.close();
+                console.log("Not authorised");
+                localStorage.removeItem("authKey");
+                websocket.close();
+                break;
+            case "ping":
+                websocket.send(formatMessage("pong"));
+                break;
+            case "pong":
+                console.log("Pinged successfully");
+                break;
+            case "clientConnected":
+                if(!Client.connected){
+                    websocket.send(formatMessage("start_game"));
+                }
+                Client.connect(true);
+                console.log("Client connected");
+                break;
+            case "clientDisconnected":
+                Client.connect(false);
+                console.log("Client disconnected");
+                window.location.reload();
+                break;
+            case "connected":
+                Client.connect(true);
+                break;
+            case "disconnected":
+                Client.connect(false);
+                break;
+            case "reload":
+                window.location.reload();
+                break;
+            case "cannotConnect":
+                console.log("Cannot connect to server");
+                break;
+            default:
+                try {
+                    let message = JSON.parse(event.data);
+                    if(message["event"] === "getChat"){
+                        Client.chat = message["message"];
+                        updateChat();
+                    }
+                    else if(message["event"] === "start_game"){
+                        Client.start_game = message["message"];
+                        updateStartGame();
+                        updateServerList();
+                    }
+                    else if(message["event"] === "playerInformation"){
+                        if(message["message"] === []){
+                            Client.playerInformation = [];
+                        }
+                        else
+                            Client.playerInformation = message["message"];
+                        console.log(Client.playerInformation);
+                        updatePlayerInformation()
+                    }
+                    else if(message["event"] === "servers"){
+                        Client.servers = message["message"];
+                        updateServerList();
+                    }
+                    else if(message["event"] === "connectingServer"){
+                        if(message["message"] !== undefined) {
+                            console.log("Connecting to: %s", message["message"]);
+                            Client.connectingServer = message["message"];
+                            updateServerList();
+                        }
+                        else{
+                            console.log("Connecting server is undefined");
+                        }
+                    }
+                    else if(message["event"] === "accounts"){
+                        Client.accounts = message["message"];
+                        console.log("Got accounts");
+                        updateAccountList();
+                    }
+                    else if(message["event"] === "connectedServers"){
+                        Client.connectedServers = message["message"];
+                        console.log("Updated connectedServers");
+                        console.log(message["message"]);
+                        updateServerList();
+                    }
+                    else if(message["event"] === "connectingServers"){
+                        Client.connectingServers = message["message"];
+                        console.log("Updated connectingServers");
+                        console.log(message["message"]);
+                        updateServerList();
+                    }
+                    else if(message["event"] === "connectedServersID"){
+                        Client.connectedServersID = message["message"];
+                        console.log("Updating connectedServersID");
+                    }
+                    else if(message["event"] === "chatID"){
+                        Client.chatID = message["message"];
+                        console.log("Updating chatID to: %s", message["message"]);
+                    }
+                    else if(message["event"] === "start_gameID"){
+                        Client.start_gameID = message["message"];
+                        console.log("Updating start_gameID to: %s", message["message"]);
+                    }
+                    else if(message["event"] === "playerInformationID"){
+                        Client.playerInformationID = message["message"];
+                        console.log("Updating playerInformationID to: %s", message["message"]);
+                    }
+                    else if(message["event"] === "connectingServersID"){
+                        Client.connectingServersID = message["message"];
+                        console.log("Updating connectingServersID to: %s", message["message"]);
+                    }
+                    else if(message["event"] === "portal"){
+                        if(message["player"] === Client.currentAccount){
+                            document.getElementById("currentPortal").innerHTML = message["message"];
+                        }
+                        console.log("New portal");
+                    }
+                    else{
+                        console.log("Unknown event: %s", message["event"]);
+                    }
+                }
+                catch (error){
+                    console.log("Error: %s", error);
+                    console.log("Unknown message %s", event.data);
+                }
+        }
+    };
+    function pingConnection(){
+        if(websocketConnected)
+            websocket.send(formatMessage('connection'));
+        if(Client.connected && Client.start_game === undefined)
+            websocket.send(formatMessage("start_game"));
+        if(Client.connected && Client.playerInformation === undefined)
+            websocket.send(formatMessage("playerInformation"));
+    }
+    function checkServer(){
+        ws = new WebSocket("ws://localhost:8080");
+        ws.onopen = (event) => {
+            console.log("Server online");
+            window.location.reload();
+        }
+        ws.onclose = (event) =>{
+            setTimeout(checkServer, 3000);
+        }
+    }
+    function connectToServer(server,port){
+        localStorage.setItem("currentServer", server);
+        Client.connectingServer = server;
+        Client.currentServer = server;
+        let json = {"server":server,"port":port};
+        sendMessage(formatMessage('connect',json));
+    }
+    function formatMessage(messageType, message = undefined){
+        // console.log(Client.chatID);
+        let formattedMessage = {
+            "event": messageType,
+            "message": message,
+            "authentication": localStorage.getItem("authKey"),
+            "player": Client.currentAccount,
+            "server": Client.currentServer,
+            "connectedServersID": Client.connectedServersID,
+            "connectingServersID": Client.connectingServersID,
+            "chatID": Client.chatID,
+            "playerInformationID": Client.playerInformationID,
+            "start_gameID": Client.start_gameID
+        }
+        return JSON.stringify(formattedMessage);
+    }
+    function ping(){
+        if(websocketConnected)
+            websocket.send(formatMessage("ping"));
+    }
+    function disconnect(){
+        if(websocketConnected)
+            websocket.close();
+    }
+    function disconnectPlayer(server){
+        console.log("Disconnecting: %s", Client.currentAccount);
+        Client.currentServer = undefined;
+        Client.connectingServer = undefined;
+        websocket.send(formatMessage("disconnect", server));
+        Client.playerInformation = [];
+        Client.start_game = [];
+        Client.chat = [];
+        updatePlayerInformation();
+        updateStartGame();
+        updateChat();
+    }
+    function accountChoose(account){
+        console.log("Changed account to: %s", account);
+        localStorage.setItem("currentAccount", account);
+        Client.currentAccount = account;
+        Client.connectedServersID = "none";
+        Client.connectingServersID = "none";
+        Client.chatID = "none";
+        Client.playerInformationID = "none";
+        Client.start_gameID = "none";
+        Client.chat = [];
+        Client.playerInformation = [];
+        Client.start_game = [];
+        Client.connectingServers = [];
+        Client.connectedServers = [];
+        updateAccountList();
+        updateStartGame();
+        updatePlayerInformation();
+        updateChat();
+    }
+    function textFormatter(message,player){
+        return '<div class="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3"> <div class=\"text-md-center text-xl-left\">  <h6 class="mb-1">' + message + '</h6> <p class="text-muted mb-0">' + player + '</p> </div> </div>';
+    }
+    function settingFormatter(setting,value){
+        return '<tr><td>' + setting + '</td><td>' + value + '</td></tr>';
+    }
+    function serverFormatter(server,port){
+        return '<li class="nav-item menu-items"><btn class="btn nav-link" onclick="connectToServer(`' + server + '`,`' + port + '`)"><span class="menu-icon"><img class="img-xs rounded-circle " src="connect.png" alt=""></span><span class="menu-title">' + server + '</span></btn></li>';
+    }
+    function serverFormatter2(server,port){
+        return '<li class="nav-item menu-items"><btn class="btn nav-link" onclick="Client.currentServer = `' + server + '`"><span class="menu-icon"><img class="img-xs rounded-circle " src="disconnect.png" alt="" onclick="disconnectPlayer(`' + server + '`)"></span><span class="menu-title">' + server + '</span></btn></li>';
+    }
+    function serverFormatter3(server,port){
+        return '<li class="nav-item menu-items"><btn class="btn nav-link" onclick="console.log(`connecting`)"><span class="menu-icon"><img class="img-xs rounded-circle " src="connecting.gif" alt=""></span><span class="menu-title">' + server + '</span></btn></li>';
+    }
+    function serverFormatter4(server,port){
+        return '<li class="nav-item menu-items"><btn class="btn nav-link" onclick="Client.currentServer = `' + server + '`"><span class="menu-icon"><img class="img-xs rounded-circle " src="disconnect.png" alt="" onclick="disconnectPlayer(`' + server + '`)"></span><span class="menu-title text-success">' + server + '</span></btn></li>';
+    }
+    function serverFormatter5(server,port){
+        return '<li class="nav-item menu-items"><btn class="btn nav-link" onclick="console.log(`connecting`)"><span class="menu-icon"><img class="img-xs rounded-circle " src="connecting.gif" alt=""></span><span class="menu-title text-success">' + server + '</span></btn></li>';
+    }
+    function accountFormatter(account,image){
+        return '<div style="margin-left: 1em; cursor: pointer;" class="navbar-profile form-inline" onclick="accountChoose(`' + account + '`);"><img class="img-xs rounded-circle" src="' + image + '" alt=""><p class="mb-0 d-none d-sm-block navbar-profile-name">' + account + '</p><i class="mdi mdi-menu-down d-none d-sm-block"></i></div>'
+    }
+    function accountFormatter2(account,image){
+        return '<div style="margin-left: 1em; cursor: pointer;" class="navbar-profile form-inline" onclick="accountChoose(`' + account + '`);"><img class="img-xs rounded-circle" src="' + image + '" alt=""><p class="mb-0 d-none d-sm-block navbar-profile-name text-success">' + account + '</p><i class="mdi mdi-menu-down d-none d-sm-block"></i></div>'
+    }
+    function updateChat(){
+        console.log(Client.chat);
+        if(Client.chat.length < 1){
+            console.log("No Chat");
+            document.getElementById("chat").innerHTML = '<h4 class="card-title">Chat</h4><div class="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3"><div class="text-md-center text-xl-left"><h6 class="mb-1">No Chat</h6><p class="text-muted mb-0">Player</p></div></div>';
+        }
+        else {
+            let text = '<h4 class=\"card-title\">Chat</h4>';
+            for (let i = 0; i < Client.chat.length; i++) {
+                let currentChat = Client.chat[i];
+                let type = currentChat["type"];
+                if(type === "json"){
+                    if(currentChat["message"].includes('{"rawtext":[{"translate":"commands.op.message","with":{"rawtext":null}}]}'))
+                        text += textFormatter("You was given op", "Player");
+                    else if(currentChat["message"].includes('{"rawtext":[{"translate":"commands.deop.message","with":{"rawtext":null}}]}'))
+                        text += textFormatter("You op was removed", "Player");
+                    else
+                        text += textFormatter(currentChat["message"], currentChat["parameters"]);
+                }
+                else if(type === "translation"){
+                    //text += "<li>" + currentChat["parameters"] + ": " + currentChat["message"] + "</li>";
+                    if(currentChat["message"] === "§e%multiplayer.player.joined")
+                        text += textFormatter("Player joined:", currentChat["parameters"]);
+                    else if(currentChat["message"] === "§e%multiplayer.player.left")
+                        text += textFormatter("Player left:", currentChat["parameters"]);
+                    else
+                        text += textFormatter(currentChat["message"], currentChat["parameters"]);
+                }
+                else if(type === "announcement"){
+                    //text += "<li>" + "Announcement: " + currentChat["message"] + "</li>";
+                    text += textFormatter(currentChat["message"].slice(9), "[Server]");
+                }
+                else {
+                    console.log(type);
+                    if (JSON.stringify(currentChat["source_name"]) !== undefined) {
+                        text += textFormatter(currentChat["message"], currentChat["source_name"]);
+                    } else
+                        text += textFormatter(currentChat["message"], "Unknown origin");
+                        //text += "<li>" + "Unknown origin: " + currentChat["message"] + "</li>";
+                }
+            }
+            document.getElementById("chat").innerHTML = text;
+            document.getElementById("chatRoot").scrollTop = document.getElementById("chatRoot").scrollHeight;
+        }
+    }
+    function updateStartGame(){
+        console.log(Client.start_game);
+        if(Client.start_game.length < 1){
+            console.log("No start_game");
+            document.getElementById("start_game").innerHTML = '<tr><td>Not recieved info</td><td>Connect to a game first</td></tr>';
+        }
+        else {
+            let text = '';
+            let stringifySetting = ["player_position", "rotation", "gamerules", "edu_resource_uri", "itemstates", "property_data"]
+            Object.keys(Client.start_game).forEach(function(key) {
+                // console.log('Key : ' + key + ', Value : ' + data[key])
+                if(stringifySetting.includes(key)){
+                    // console.log(key);
+                    text += settingFormatter(key, JSON.stringify(Client.start_game[key]).toString());
+                    // console.log(Client.start_game[key]);
+                }
+                else if(Client.start_game[key].length < 1){
+                    text += settingFormatter(key, "None");
+                }
+                else {
+                    // console.log(key);
+                    text += settingFormatter(key, Client.start_game[key]);
+                }
+            })
+            document.getElementById("start_game").innerHTML = text;
+        }
+    }
+    function updatePlayerInformation(){
+        console.log(Client.playerInformation);
+        console.log("Updating player information");
+        if(Client.playerInformation.length < 1){
+            console.log("No playerInformation");
+            document.getElementById("playerInformation").innerHTML = '<tr><td>Not received info</td><td>Connect to a game first</td></tr>';
+            document.getElementById("position").innerHTML = "Unknown";
+        }
+        else {
+            document.getElementById("position").innerHTML = "X:" + JSON.stringify(Client.playerInformation["Player Position"]["x"].toFixed(2)).replaceAll('"', "") + "<br>Y:" + JSON.stringify(Client.playerInformation["Player Position"]["y"].toFixed(2)).replaceAll('"', "") + "<br>Z:" + JSON.stringify(Client.playerInformation["Player Position"]["z"].toFixed(2)).replaceAll('"', "");
+            let text = '';
+            let stringifySetting = ["Player Position", "Player Rotation", "Players"];
+            Object.keys(Client.playerInformation).forEach(function(key) {
+                // console.log('Key : ' + key + ', Value : ' + data[key])
+                if(key === "Connected Server"){
+                    text += settingFormatter(key, Client.playerInformation[key] + '<button style="margin-left: 1em;" type="button" class="btn btn-danger btn-rounded" onclick="disconnectPlayer(`' + Client.currentServer + '`)">Disconnect</button>');
+                }
+                else if(stringifySetting.includes(key)){
+                    // console.log(key);
+                    text += settingFormatter(key, JSON.stringify(Client.playerInformation[key]).toString());
+                    // console.log(Client.start_game[key]);
+                }
+                else if(Client.playerInformation[key].length < 1){
+                    text += settingFormatter(key, "None");
+                }
+                else {
+                    // console.log(key);
+                    text += settingFormatter(key, Client.playerInformation[key]);
+                }
+            })
+            document.getElementById("playerInformation").innerHTML = text;
+        }
+    }
+    function updateServerList(){
+        console.log(Client.servers);
+        console.log("Updating server list");
+        if(Client.servers === undefined){
+            console.log("No servers given");
+            document.getElementById("serverList").innerHTML = '<li class="nav-item menu-items"><btn class="btn nav-link" onclick="console.log(`no server`)"><span class="menu-icon"><img class="img-xs rounded-circle " src="disconnect.png" alt=""></span><span class="menu-title">No servers recieved</span></btn></li>';
+        }
+        else if(Client.servers.length < 1){
+            console.log("No servers given");
+            document.getElementById("serverList").innerHTML = '<li class="nav-item menu-items"><btn class="btn nav-link" onclick="console.log(`no server`)"><span class="menu-icon"><img class="img-xs rounded-circle " src="disconnect.png" alt=""></span><span class="menu-title">No servers recieved</span></btn></li>';
+        }
+        else {
+            let text = '';
+            Client.servers.forEach(function(key) {
+                let server = key.split(":")
+                console.log(server[0], server[1]);
+                if (Client.connectedServers.includes(server[0])) {
+                    if(!Client.connectedServers.includes(Client.currentServer)){
+                        Client.currentServer = server[0];
+                    }
+                    else if(Client.currentServer === undefined){
+                        console.log("currentServer undefined");
+                        Client.currentServer = server[0];
+                    }
+                    if(Client.currentServer === server[0]){
+                        text += serverFormatter4(server[0], server[1]);
+                    }
+                    else {
+                        text += serverFormatter2(server[0], server[1]);
+                    }
+                }
+                else if (Client.connectingServers.includes(server[0])) {
+                    if(Client.currentServer === server[0]){
+                        text += serverFormatter5(server[0], server[1]);
+                    }
+                    else {
+                        text += serverFormatter3(server[0], server[1]);
+                    }
+                }
+                else {
+                    // console.log("currentServer: ", localStorage.getItem("currentServer"), server[0]);
+                    text += serverFormatter(server[0], server[1]);
+                }
+                // if(Client.playerInformation !== undefined) {
+                //     if (Client.connectedServers.includes(server[0])) {
+                //         text += serverFormatter2(server[0], server[1]);
+                //     }
+                //     else {
+                //         text += serverFormatter(server[0], server[1]);
+                //     }
+                // }
+                // else if(Client.connectingServer !== undefined){
+                //     if(Client.connectingServer === server[0]){
+                //         text += serverFormatter3(server[0], server[1]);
+                //     }
+                //     else{
+                //         text += serverFormatter(server[0], server[1]);
+                //     }
+                // }
+                // else {
+                //     text += serverFormatter(server[0], server[1]);
+                // }
+            })
+            document.getElementById("serverList").innerHTML = text;
+        }
+    }
+    function updateAccountList(){
+        console.log(Client.accounts);
+        console.log("Updating account list");
+        let accText = '';
+        if(Client.accounts !== undefined) {
+            if(localStorage.getItem("currentAccount") === null || localStorage.getItem("currentAccount") === "undefined"){
+                localStorage.setItem("currentAccount", Object.keys(Client.accounts)[0]);
+                Client.currentAccount = Client.accounts[0];
+            }
+            else{
+                console.log(localStorage.getItem("currentAccount"));
+                Client.currentAccount = localStorage.getItem("currentAccount");
+            }
+            Object.keys(Client.accounts).forEach(function (key) {
+                if (Client.accounts !== undefined) {
+                    if (localStorage.getItem("currentAccount") === key) {
+                        accText += accountFormatter2(key, Client.accounts[key]);
+                    } else {
+                        accText += accountFormatter(key, Client.accounts[key]);
+                    }
+                } else {
+                    accText += accountFormatter(key, Client.accounts[key]);
+                }
+            })
+        }
+        accText += '<ul class="navbar-nav navbar-nav-right"></ul><div class="navbar-profile form-inline"><img class="img-xs rounded-circle" src="grundy.png" alt="profile image"><p class="text-info font-weight-bold mb-0 d-none d-sm-block navbar-profile-name">Grundy Member</p></div>' + '<image src="logout.png" class="navbar-toggler navbar-toggler-right align-self-center" onclick="localStorage.clear(`authKey`);">';
+        document.getElementById("accounts").innerHTML = accText;
+    }
+    function sendMessage(message){
+        websocket.send(message);
+    }
+</script>
+</html>
